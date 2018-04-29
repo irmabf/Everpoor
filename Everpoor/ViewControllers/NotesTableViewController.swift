@@ -1,0 +1,115 @@
+//
+//  NotesTableViewController.swift
+//  Everpoor
+//
+//  Created by Joaquin Perez on 29/04/2018.
+//  Copyright © 2018 Joaquin Perez. All rights reserved.
+//
+
+import UIKit
+import CoreData
+
+class NotesTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+    
+      var fetchedResultController : NSFetchedResultsController<Notebook>!
+    
+      let defaultNoteSorts = [NSSortDescriptor(key: "title", ascending: true)]
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewNote))
+        
+        // Fetch Request.
+        let viewMOC = DataManager.sharedManager.persistentContainer.viewContext
+        
+        let fetchRequest = NSFetchRequest<Notebook>(entityName: "Notebook")
+        
+        let sortByDefault = NSSortDescriptor(key: "isDefault", ascending: false)
+        let sortByTitle = NSSortDescriptor(key: "name", ascending: true)
+        fetchRequest.sortDescriptors = [sortByDefault,sortByTitle]
+        
+        fetchedResultController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: viewMOC, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultController.delegate = self
+        
+        try! fetchedResultController.performFetch()
+        
+        if fetchedResultController.fetchedObjects?.count == 0
+        {
+          // Sólo la primera vez, cuando no hay default. Lo hacemos en el ViewContext porque es indispensable para la App.
+            let defaultNotebook = NSEntityDescription.insertNewObject(forEntityName: "Notebook", into: viewMOC) as! Notebook
+            defaultNotebook.isDefault = true
+            defaultNotebook.name = NSLocalizedString("My Notebook", comment: "Default Notebook Name")
+            
+            try! viewMOC.save()
+            
+        }
+        
+    }
+
+
+    // MARK: - Table view data source
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        
+        return (fetchedResultController.fetchedObjects?.count)!
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        let notebook = fetchedResultController.object(at: IndexPath(row: section, section: 0))
+        return notebook.notes?.count ?? 0
+    }
+
+  
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+     var cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier")
+     if cell == nil {
+     cell = UITableViewCell(style: .default, reuseIdentifier: "reuseIdentifier")
+     }
+     let notebook = fetchedResultController.object(at: IndexPath(row: indexPath.section, section: 0))
+     let notes = notebook.notes!.sortedArray(using: defaultNoteSorts) as! [Note]
+     cell?.textLabel?.text = notes[indexPath.row].title
+     
+     return cell!
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let notebook = fetchedResultController.object(at: IndexPath(row: indexPath.section, section: 0))
+        let notes = notebook.notes!.sortedArray(using: defaultNoteSorts) as! [Note]
+        let note = notes[indexPath.row]
+        
+        let noteVC = NoteViewController()
+        noteVC.note = note
+        
+        navigationController?.pushViewController(noteVC, animated: true)
+        
+    }
+ 
+
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        let notebook = fetchedResultController.object(at: IndexPath(row: section, section: 0))
+        return notebook.name
+    }
+
+    @objc func addNewNote()  {
+        
+        let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+        let defaultNotebook = fetchedResultController.fetchedObjects!.first!
+        privateMOC.perform {
+  
+            let note = NSEntityDescription.insertNewObject(forEntityName: "Note", into: privateMOC) as! Note
+            
+             note.title = "Nueva nota"
+             note.createdAtTI = Date().timeIntervalSince1970
+             note.notebook = (privateMOC.object(with: defaultNotebook.objectID) as! Notebook)
+            
+            try! privateMOC.save()
+        }
+        
+    }
+    
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        tableView.reloadData()
+    }
+
+}

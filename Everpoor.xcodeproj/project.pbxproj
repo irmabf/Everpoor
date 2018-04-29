@@ -8,20 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		8706A2F120962F8800C1E4B9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A2F020962F8800C1E4B9 /* AppDelegate.swift */; };
-		8706A2F320962F8800C1E4B9 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A2F220962F8800C1E4B9 /* ViewController.swift */; };
-		8706A2F620962F8800C1E4B9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8706A2F420962F8800C1E4B9 /* Main.storyboard */; };
 		8706A2F820962F8900C1E4B9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8706A2F720962F8900C1E4B9 /* Assets.xcassets */; };
 		8706A2FB20962F8900C1E4B9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8706A2F920962F8900C1E4B9 /* LaunchScreen.storyboard */; };
+		8706A3062096304A00C1E4B9 /* Everpoor.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 8706A3042096304A00C1E4B9 /* Everpoor.xcdatamodeld */; };
+		8706A3082096305500C1E4B9 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A3072096305500C1E4B9 /* DataManager.swift */; };
+		8706A30A2096322200C1E4B9 /* NotesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A3092096322200C1E4B9 /* NotesTableViewController.swift */; };
+		8706A30C20963D0A00C1E4B9 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A30B20963D0A00C1E4B9 /* NoteViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		8706A2ED20962F8700C1E4B9 /* Everpoor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Everpoor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8706A2F020962F8800C1E4B9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		8706A2F220962F8800C1E4B9 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		8706A2F520962F8800C1E4B9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		8706A2F720962F8900C1E4B9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8706A2FA20962F8900C1E4B9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8706A2FC20962F8900C1E4B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8706A3052096304A00C1E4B9 /* Everpoor.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Everpoor.xcdatamodel; sourceTree = "<group>"; };
+		8706A3072096305500C1E4B9 /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
+		8706A3092096322200C1E4B9 /* NotesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesTableViewController.swift; sourceTree = "<group>"; };
+		8706A30B20963D0A00C1E4B9 /* NoteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,14 +58,32 @@
 		8706A2EF20962F8700C1E4B9 /* Everpoor */ = {
 			isa = PBXGroup;
 			children = (
+				8706A3032096300D00C1E4B9 /* Model */,
+				8706A30220962FAA00C1E4B9 /* ViewControllers */,
 				8706A2F020962F8800C1E4B9 /* AppDelegate.swift */,
-				8706A2F220962F8800C1E4B9 /* ViewController.swift */,
-				8706A2F420962F8800C1E4B9 /* Main.storyboard */,
 				8706A2F720962F8900C1E4B9 /* Assets.xcassets */,
 				8706A2F920962F8900C1E4B9 /* LaunchScreen.storyboard */,
 				8706A2FC20962F8900C1E4B9 /* Info.plist */,
 			);
 			path = Everpoor;
+			sourceTree = "<group>";
+		};
+		8706A30220962FAA00C1E4B9 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				8706A3092096322200C1E4B9 /* NotesTableViewController.swift */,
+				8706A30B20963D0A00C1E4B9 /* NoteViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
+		8706A3032096300D00C1E4B9 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				8706A3072096305500C1E4B9 /* DataManager.swift */,
+				8706A3042096304A00C1E4B9 /* Everpoor.xcdatamodeld */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -124,7 +146,6 @@
 			files = (
 				8706A2FB20962F8900C1E4B9 /* LaunchScreen.storyboard in Resources */,
 				8706A2F820962F8900C1E4B9 /* Assets.xcassets in Resources */,
-				8706A2F620962F8800C1E4B9 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,22 +156,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8706A2F320962F8800C1E4B9 /* ViewController.swift in Sources */,
 				8706A2F120962F8800C1E4B9 /* AppDelegate.swift in Sources */,
+				8706A30A2096322200C1E4B9 /* NotesTableViewController.swift in Sources */,
+				8706A3082096305500C1E4B9 /* DataManager.swift in Sources */,
+				8706A30C20963D0A00C1E4B9 /* NoteViewController.swift in Sources */,
+				8706A3062096304A00C1E4B9 /* Everpoor.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		8706A2F420962F8800C1E4B9 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				8706A2F520962F8800C1E4B9 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		8706A2F920962F8900C1E4B9 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -332,6 +348,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		8706A3042096304A00C1E4B9 /* Everpoor.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				8706A3052096304A00C1E4B9 /* Everpoor.xcdatamodel */,
+			);
+			currentVersion = 8706A3052096304A00C1E4B9 /* Everpoor.xcdatamodel */;
+			path = Everpoor.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 8706A2E520962F8700C1E4B9 /* Project object */;
 }
