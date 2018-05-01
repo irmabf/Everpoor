@@ -7,13 +7,16 @@
 //
 
 import UIKit
+import CoreData
 
-class NoteViewController: UIViewController, UITextFieldDelegate, UITextViewDelegate {
+class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate {
     
     let dateLabel = UILabel()
     let expirationDate = UILabel()
     let titleTextField = UITextField()
     let noteTextView = UITextView()
+    
+    var imageViews:[UIImageView] = []
     
     var note: Note!
     
@@ -23,6 +26,8 @@ class NoteViewController: UIViewController, UITextFieldDelegate, UITextViewDeleg
         dateF.timeStyle = .none
         return dateF
     }()
+    
+    var relativePoint = CGPoint.zero
     
     override func loadView() {
         
@@ -72,6 +77,24 @@ class NoteViewController: UIViewController, UITextFieldDelegate, UITextViewDeleg
         titleTextField.text = note.title
         noteTextView.text = note.content
         dateLabel.text = dateFormatter.string(from: Date(timeIntervalSince1970: note.createdAtTI))
+        
+        if let pictures = note.pictures as? Set<Picture> {
+            for picture  in pictures {
+                addNewImage(UIImage(data: picture.imgData!)!, tag: Int(picture.tag), relativeX: picture.x, relativeY: picture.y)
+            }
+        }
+        
+        // MARK: Toolbar
+        
+         navigationController?.isToolbarHidden = false
+        
+        let photoBarButton = UIBarButtonItem(title: NSLocalizedString("Add image", comment: "ToolbarButton"), style: .plain, target: self, action: #selector(catchPhoto))
+            
+        let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        
+        let mapBarButton = UIBarButtonItem(title: NSLocalizedString("Add Location", comment: "ToolbarButton"), style: .plain, target: self, action: #selector(addLocation))
+        
+        self.setToolbarItems([photoBarButton,flexible,mapBarButton], animated: false)
         
         // MARK: Gestures
         
@@ -123,7 +146,72 @@ class NoteViewController: UIViewController, UITextFieldDelegate, UITextViewDeleg
        
     }
     
+    // MARK: Toolbar Buttons actions
+    
+    @objc func catchPhoto()
+    {
+        let actionSheetAlert = UIAlertController(title: NSLocalizedString("Add image", comment: "Action Sheet title"), message: nil, preferredStyle: .actionSheet)
+        
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        
+        let useCamera = UIAlertAction(title: NSLocalizedString("Camera", comment: "Action Sheet Value"), style: .default) { (alertAction) in
+            imagePicker.sourceType = .camera
+            self.present(imagePicker, animated: true, completion: nil)
+        }
+        
+        let usePhotoLibrary = UIAlertAction(title: NSLocalizedString("Photo Library", comment: "Action Sheet Value"), style: .default) { (alertAction) in
+            imagePicker.sourceType = .photoLibrary
+            self.present(imagePicker, animated: true, completion: nil)
+        }
+        let cancel = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .destructive, handler: nil)
+        
+        actionSheetAlert.addAction(useCamera)
+        actionSheetAlert.addAction(usePhotoLibrary)
+        actionSheetAlert.addAction(cancel)
+        
+        
+        
+        present(actionSheetAlert, animated: true, completion: nil)
+    }
+    
+    @objc func addLocation()
+    {
+        
+    }
+    
+    // MARK: Image Picker Delegate
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        
+        let image = info[UIImagePickerControllerOriginalImage] as! UIImage
+        
+        let currentImages = note.pictures?.count ?? 0
+        let tag = currentImages + 1
+        
+        let xRelative = Double(tag*10) / Double(UIScreen.main.bounds.width)
+        let yRelative = Double(tag*10) / Double(UIScreen.main.bounds.height)
 
+        let backMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+        
+        backMOC.perform {
+            
+            let picture = NSEntityDescription.insertNewObject(forEntityName: "Picture", into: backMOC) as! Picture
+            
+            picture.x = xRelative
+            picture.y = yRelative
+            picture.tag = Int64(tag)
+            picture.imgData = UIImagePNGRepresentation(image)
+            
+            picture.note = (backMOC.object(with: self.note.objectID) as! Note)
+            
+            try! backMOC.save()
+        }
+        addNewImage(image, tag: tag, relativeX: xRelative, relativeY: yRelative)
+        
+        picker.dismiss(animated: true, completion: nil)
+        
+    }
+    
 
 
 }

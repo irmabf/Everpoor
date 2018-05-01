@@ -14,6 +14,7 @@
 		8706A3082096305500C1E4B9 /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A3072096305500C1E4B9 /* DataManager.swift */; };
 		8706A30A2096322200C1E4B9 /* NotesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A3092096322200C1E4B9 /* NotesTableViewController.swift */; };
 		8706A30C20963D0A00C1E4B9 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8706A30B20963D0A00C1E4B9 /* NoteViewController.swift */; };
+		8769290620986BF000BF4DD7 /* NoteViewController+Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8769290520986BF000BF4DD7 /* NoteViewController+Images.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		8706A3072096305500C1E4B9 /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		8706A3092096322200C1E4B9 /* NotesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesTableViewController.swift; sourceTree = "<group>"; };
 		8706A30B20963D0A00C1E4B9 /* NoteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteViewController.swift; sourceTree = "<group>"; };
+		8769290520986BF000BF4DD7 /* NoteViewController+Images.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NoteViewController+Images.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 			children = (
 				8706A3092096322200C1E4B9 /* NotesTableViewController.swift */,
 				8706A30B20963D0A00C1E4B9 /* NoteViewController.swift */,
+				8769290520986BF000BF4DD7 /* NoteViewController+Images.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -156,6 +159,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8769290620986BF000BF4DD7 /* NoteViewController+Images.swift in Sources */,
 				8706A2F120962F8800C1E4B9 /* AppDelegate.swift in Sources */,
 				8706A30A2096322200C1E4B9 /* NotesTableViewController.swift in Sources */,
 				8706A3082096305500C1E4B9 /* DataManager.swift in Sources */,
