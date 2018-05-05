@@ -29,6 +29,8 @@ extension NoteViewController {
         
         let leftConstraint = NSLayoutConstraint(item: imageView, attribute: .left, relatedBy: .equal, toItem: self.view, attribute: .left, multiplier: 1, constant: constantLeft)
         
+        leftConstraint.priority = .defaultHigh
+        
         leftConstraint.identifier = "left_\(tag)"
         
         let constantTop = CGFloat(relativeY) * UIScreen.main.bounds.height
@@ -37,13 +39,36 @@ extension NoteViewController {
         
         topConstraint.identifier = "top_\(tag)"
         
-        self.view.addConstraints([heightConstraint,witdhConstraint,leftConstraint,topConstraint])
+        topConstraint.priority = .defaultHigh
+        
+        var constraints = [heightConstraint,witdhConstraint,leftConstraint,topConstraint]
+        
+        // Limites.
+        
+        constraints.append(NSLayoutConstraint(item: imageView, attribute: .left, relatedBy: .greaterThanOrEqual, toItem: self.view, attribute: .left, multiplier: 1, constant: 10))
+        constraints.append(NSLayoutConstraint(item: imageView, attribute: .right, relatedBy: .lessThanOrEqual, toItem: self.view, attribute: .right, multiplier: 1, constant: -10))
+        
+        constraints.append(NSLayoutConstraint(item: imageView, attribute: .top, relatedBy: .greaterThanOrEqual, toItem: self.noteTextView, attribute: .top, multiplier: 1, constant: 10))
+        
+        
+        constraints.append(NSLayoutConstraint(item: imageView, attribute: .bottom, relatedBy: .lessThanOrEqual, toItem: self.view, attribute: .bottom, multiplier: 1, constant: -10))
+        
+        
+        self.view.addConstraints(constraints)
         
         // MARK: Gestures in images.
         
         let moveViewGesture = UILongPressGestureRecognizer(target: self, action: #selector(userMoveImage))
         
         imageView.addGestureRecognizer(moveViewGesture)
+        
+        let rotateGesture = UIRotationGestureRecognizer(target: self, action: #selector(rotateImage))
+        
+        imageView.addGestureRecognizer(rotateGesture)
+        
+        let zoomingGesture = UIPinchGestureRecognizer(target: self, action: #selector(zoomImage))
+        
+        imageView.addGestureRecognizer(zoomingGesture)
         
     }
     
@@ -85,5 +110,49 @@ extension NoteViewController {
         }
         
     }
+    
+    @objc func rotateImage(rotateGesture:UIRotationGestureRecognizer)
+    {
+        switch rotateGesture.state {
+        case .began, .changed:
+            rotateGesture.view!.transform = CGAffineTransform.init(rotationAngle: rotateGesture.rotation)
+        case .ended, .cancelled:
+            rotateGesture.view!.transform = CGAffineTransform.init(rotationAngle: rotateGesture.rotation)
+            
+            print("Ver Angle: \(rotateGesture.rotation)")
+        default:
+            break;
+        }
+    }
+    
+    @objc func zoomImage(zoomGesture:UIPinchGestureRecognizer)
+    {
+        
+        
+        
+        var scale = zoomGesture.scale
+        if scale > 1.3
+        {
+            scale = 1.3
+        }
+        else if scale < 0.7
+        {
+            scale = 0.7
+        }
+
+       switch zoomGesture.state {
+        case .began, .changed:
+        //    zoomGesture.view?.transform = CGAffineTransform.init(rotationAngle: rotation)
+            zoomGesture.view!.transform = zoomGesture.view!.transform.scaledBy(x: scale, y: scale)
+        case .ended, .cancelled:
+         //   zoomGesture.view?.transform = CGAffineTransform.init(rotationAngle: rotation)
+            zoomGesture.view!.transform = zoomGesture.view!.transform.scaledBy(x: scale, y: scale)
+        
+        default:
+            break;
+        }
+    }
+    
+    
     
 }

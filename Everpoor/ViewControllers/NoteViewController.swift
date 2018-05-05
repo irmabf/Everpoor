@@ -8,17 +8,23 @@
 
 import UIKit
 import CoreData
+import CoreLocation
 
-class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate {
+class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextViewDelegate, SelectInMapDelegate {
+    
+    var placemark: CLPlacemark?
+    var userAddress: String?
     
     let dateLabel = UILabel()
     let expirationDate = UILabel()
     let titleTextField = UITextField()
     let noteTextView = UITextView()
     
-    var imageViews:[UIImageView] = []
     
     var note: Note!
+    var pictures: [Picture] = []
+    var imageViews: [UIImageView] = []
+    
     
     let dateFormatter = { () -> DateFormatter in
         let dateF = DateFormatter()
@@ -42,6 +48,7 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         
         backView.addSubview(noteTextView)
         noteTextView.delegate = self
+
         
         // MARK: Autolayout.
     
@@ -78,10 +85,10 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         noteTextView.text = note.content
         dateLabel.text = dateFormatter.string(from: Date(timeIntervalSince1970: note.createdAtTI))
         
-        if let pictures = note.pictures as? Set<Picture> {
-            for picture  in pictures {
+        pictures = note.pictures?.sortedArray(using: [NSSortDescriptor(key: "tag", ascending: true)]) as! [Picture]
+  
+        for picture  in pictures {
                 addNewImage(UIImage(data: picture.imgData!)!, tag: Int(picture.tag), relativeX: picture.x, relativeY: picture.y)
-            }
         }
         
         // MARK: Toolbar
@@ -100,7 +107,7 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         
         let swipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(closeKeyboard))
         swipeGesture.direction = .down
-        
+
         view.addGestureRecognizer(swipeGesture)
         
     }
@@ -148,7 +155,7 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
     
     // MARK: Toolbar Buttons actions
     
-    @objc func catchPhoto()
+    @objc func catchPhoto(_ barButton:UIBarButtonItem)
     {
         let actionSheetAlert = UIAlertController(title: NSLocalizedString("Add image", comment: "Action Sheet title"), message: nil, preferredStyle: .actionSheet)
         
@@ -169,14 +176,23 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         actionSheetAlert.addAction(useCamera)
         actionSheetAlert.addAction(usePhotoLibrary)
         actionSheetAlert.addAction(cancel)
-        
-        
+                
+        let popOverCont = actionSheetAlert.popoverPresentationController
+        popOverCont?.barButtonItem = barButton
         
         present(actionSheetAlert, animated: true, completion: nil)
     }
     
-    @objc func addLocation()
+    @objc func addLocation(_ barButton:UIBarButtonItem)
     {
+        let selectAddress = SelectInMapViewController()
+        selectAddress.delegate = self
+        let navController = UINavigationController(rootViewController: selectAddress)
+        navController.modalPresentationStyle = UIModalPresentationStyle.popover
+        let popOverCont = navController.popoverPresentationController
+        popOverCont?.barButtonItem = barButton
+        
+        present(navController, animated: true, completion: nil)
         
     }
     

@@ -19,6 +19,7 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
         super.viewDidLoad()
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewNote))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Notebooks", comment: "Notebooks barButton"), style: .plain, target: self, action: #selector(manageNotebooks))
         
         // Fetch Request.
         let viewMOC = DataManager.sharedManager.persistentContainer.viewContext
@@ -44,7 +45,6 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
             try! viewMOC.save()
             
         }
-        
     }
 
 
@@ -81,7 +81,9 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
         let noteVC = NoteViewController()
         noteVC.note = note
         
-        navigationController?.pushViewController(noteVC, animated: true)
+        let detailNavController = UINavigationController(rootViewController: noteVC)
+        
+        splitViewController?.showDetailViewController(detailNavController, sender: nil)
         
     }
  
@@ -90,6 +92,8 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
         let notebook = fetchedResultController.object(at: IndexPath(row: section, section: 0))
         return notebook.name
     }
+    
+    // MARK: UIBarButtons Actions
 
     @objc func addNewNote()  {
         
@@ -108,8 +112,22 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
         
     }
     
+    @objc func manageNotebooks(barButton:UIBarButtonItem)
+    {
+        let notebookTVC = NotebooksTableViewController(style: .plain)
+        notebookTVC.notebooks = fetchedResultController.fetchedObjects!
+        let navController = UINavigationController(rootViewController: notebookTVC)
+        navController.modalPresentationStyle = UIModalPresentationStyle.popover
+        let popOverCont = navController.popoverPresentationController
+        popOverCont?.barButtonItem = barButton
+        
+        present(navController, animated: true, completion: nil)
+    }
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.reloadData()
     }
+    
+    
 
 }

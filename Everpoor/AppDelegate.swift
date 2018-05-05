@@ -20,9 +20,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         let notesTVC = NotesTableViewController(style: .plain)
         
-        let navController = UINavigationController(rootViewController: notesTVC)
+        let masterNavController = UINavigationController(rootViewController: notesTVC)
         
-        window?.rootViewController = navController
+        let splitViewController = UISplitViewController()
+        splitViewController.view.backgroundColor = .white
+        splitViewController.viewControllers = [masterNavController]
+        
+        window?.rootViewController = splitViewController
         
         window?.makeKeyAndVisible()
         
