@@ -18,10 +18,15 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewNote))
+        let addNote = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewNote))
+        
+        let addNoteInN = UIBarButtonItem(title: NSLocalizedString("+inBook", comment: ""), style: .plain, target: self, action: #selector(addNoteSelectinNotebbok))
+        
+        navigationItem.rightBarButtonItems = [addNote,addNoteInN]
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: NSLocalizedString("Notebooks", comment: "Notebooks barButton"), style: .plain, target: self, action: #selector(manageNotebooks))
         
-        // Fetch Request.
+        // MARK: Fetch Request.
+        
         let viewMOC = DataManager.sharedManager.persistentContainer.viewContext
         
         let fetchRequest = NSFetchRequest<Notebook>(entityName: "Notebook")
@@ -97,18 +102,38 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
 
     @objc func addNewNote()  {
         
-        let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
         let defaultNotebook = fetchedResultController.fetchedObjects!.first!
+        addNewNoteToNotebook(defaultNotebook)
+    }
+    
+    func addNewNoteToNotebook(_ notebook:Notebook)  {
+        
+        let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+
         privateMOC.perform {
-  
+            
             let note = NSEntityDescription.insertNewObject(forEntityName: "Note", into: privateMOC) as! Note
             
-             note.title = "Nueva nota"
-             note.createdAtTI = Date().timeIntervalSince1970
-             note.notebook = (privateMOC.object(with: defaultNotebook.objectID) as! Notebook)
+            note.title = "Nueva nota"
+            note.createdAtTI = Date().timeIntervalSince1970
+            note.notebook = (privateMOC.object(with: notebook.objectID) as! Notebook)
             
             try! privateMOC.save()
         }
+    }
+    
+    @objc func addNoteSelectinNotebbok(barButton:UIBarButtonItem)
+    {
+    let notebookTVC = NotebooksTableViewController(style: .plain)
+    notebookTVC.notebooks = fetchedResultController.fetchedObjects!
+    notebookTVC.isToSelect = true
+    notebookTVC.completionBlock = addNewNoteToNotebook
+    let navController = UINavigationController(rootViewController: notebookTVC)
+    navController.modalPresentationStyle = UIModalPresentationStyle.popover
+    let popOverCont = navController.popoverPresentationController
+    popOverCont?.barButtonItem = barButton
+        
+    present(navController, animated: true, completion: nil)
         
     }
     

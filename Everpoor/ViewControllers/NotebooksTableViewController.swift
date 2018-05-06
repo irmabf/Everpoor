@@ -12,11 +12,29 @@ import CoreData
 class NotebooksTableViewController: UITableViewController {
     
     var notebooks:[Notebook] = []
+    
+    var isToSelect = false
+    
+    var completionBlock:((Notebook)->Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewNotebook))
+        
+        
+        
+        if isToSelect {
+            title = NSLocalizedString("Select Notebook", comment: "")
+        } else {
+            title = NSLocalizedString("Manage Notebooks", comment: "")
+        }
+        
+        if !isToSelect && self.modalPresentationStyle == .fullScreen
+        {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(closeViewController))
+           
+        }
 
     }
 
@@ -47,11 +65,20 @@ class NotebooksTableViewController: UITableViewController {
 
         return cell!
     }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if isToSelect {
+            self.completionBlock!(notebooks[indexPath.row])
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
  
 
   
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        if isToSelect { return false }
+        
        let notebook = notebooks[indexPath.row]
         return !notebook.isDefault
     }
@@ -161,6 +188,13 @@ class NotebooksTableViewController: UITableViewController {
         self.present(actionAlertController, animated: true, completion: nil)
     }
     
+    @objc func closeViewController()
+    {
+       self.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: Swipe bottons
+    
     func makeADefaul(notebook:Notebook)  {
       
         let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
@@ -198,8 +232,10 @@ class NotebooksTableViewController: UITableViewController {
         
         func delete(book:Notebook)
         {
+            DispatchQueue.main.async {
             self.notebooks.remove(at: self.notebooks.index(of: book)!)
             self.tableView.reloadData()
+            }
             let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
             privateMOC.perform {
                 let backNotebook = privateMOC.object(with: (notebook.objectID)) as! Notebook
@@ -213,16 +249,20 @@ class NotebooksTableViewController: UITableViewController {
             delete(book: notebook)
         }
         else {
-            let actionAlertController = UIAlertController(title: NSLocalizedString("This notebook has notes", comment: ""), message: NSLocalizedString("You can move all notes to default notebook or delete them", comment: ""), preferredStyle: .alert)
+            let actionAlertController = UIAlertController(title: NSLocalizedString("This notebook has notes", comment: ""), message: NSLocalizedString("You can move all notes to default notebook before delete or delete them", comment: ""), preferredStyle: .alert)
             
-            actionAlertController.addAction(UIAlertAction(title: NSLocalizedString("Move notes", comment: ""), style: .default, handler: { (alertAction) in
+            actionAlertController.addAction(UIAlertAction(title: NSLocalizedString("Move notes before delete", comment: ""), style: .default, handler: { (alertAction) in
                 
                 let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+                let currentDefault = self.notebooks.first
                 privateMOC.perform {
-                    let backNotebook = privateMOC.object(with: (notebook.objectID)) as! Notebook
-                 //   let defaultNotebook =
-                   
+                    let backNotebook = privateMOC.object(with: notebook.objectID) as! Notebook
+                    let backCurrentDefault = privateMOC.object(with: (currentDefault?.objectID)!) as! Notebook
+                    
+                    backCurrentDefault.addToNotes(backNotebook.notes!)
                     try! privateMOC.save()
+                    
+                    delete(book: notebook)
                 }
                 
             }))
