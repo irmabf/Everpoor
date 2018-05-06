@@ -15,9 +15,7 @@ import Contacts
 
 protocol SelectInMapDelegate
 {
-    var placemark:CLPlacemark? { get set }
-    var userAddress: String? {get set}
-
+    func address(_ address:String, lat:Double, lon:Double)
 }
 
 class SelectInMapViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
@@ -29,11 +27,9 @@ class SelectInMapViewController: UIViewController, MKMapViewDelegate, CLLocation
     
     var delegate:SelectInMapDelegate?
     
-    var locationManager: CLLocationManager?
+    var location: CLLocation?
     var label = UILabel()
     
-    var swipeToClose: UISwipeGestureRecognizer!
-
     
     override func loadView()
     {
@@ -84,13 +80,6 @@ class SelectInMapViewController: UIViewController, MKMapViewDelegate, CLLocation
         
         let cancelBarButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancel))
         
-        self.locationManager = CLLocationManager()
-        self.locationManager?.delegate = self;
-        
-        self.locationManager?.requestWhenInUseAuthorization()
-        
-        self.locationManager?.startUpdatingLocation()
-        
         navigationItem.rightBarButtonItem = cancelBarButton
         
         title = NSLocalizedString("Center in Map", comment: "Select in Map title")
@@ -129,37 +118,29 @@ class SelectInMapViewController: UIViewController, MKMapViewDelegate, CLLocation
                     if let postalAddres = placeMark?.postalAddress
                     {
                     self.label.text = "\(postalAddres.street) \(postalAddres.city)"
+                    self.location = placeMark?.location
                     }
-     
-                   if self.delegate != nil
-                   {
-                   self.delegate!.placemark = placeMark!
-                  
-                    }
-
                 }
-                
             }
-            
         }
-        
     }
     
    @objc func cancel()  {
-        
-        if self.delegate != nil
-        {
-            self.delegate?.placemark = nil
-            self.delegate?.userAddress = nil
-        }
+    
         dismiss(animated: false, completion: nil)
     }
    @objc func confirmAddress() {
+    
+       if let loc = location
+       {
         
-        if self.delegate?.placemark != nil
+        if self.delegate != nil
         {
-            dismiss(animated: false, completion: nil)
+            self.delegate?.address(self.label.text!, lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+            
         }
+         dismiss(animated: false, completion: nil)
+    }
     }
     
  

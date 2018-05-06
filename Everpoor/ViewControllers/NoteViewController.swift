@@ -16,9 +16,11 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
     var userAddress: String?
     
     let dateLabel = UILabel()
-    let expirationDate = UILabel()
+    let expirationDate = UITextField()
     let titleTextField = UITextField()
     let noteTextView = UITextView()
+    
+    let locationLabel = UILabel()
     
     
     var note: Note!
@@ -42,13 +44,35 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         
         backView.addSubview(dateLabel)
         backView.addSubview(expirationDate)
+        expirationDate.textAlignment = .center
         
         backView.addSubview(titleTextField)
         titleTextField.delegate = self
         
+        backView.addSubview(locationLabel)
+        
         backView.addSubview(noteTextView)
         noteTextView.delegate = self
+        
+        // titles labels:
+        let titleLabel = UILabel()
+        titleLabel.text = NSLocalizedString("Title", comment: "title note label")
+        titleLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize)
+        backView.addSubview(titleLabel)
+        
+        let expirationTitleLabel = UILabel()
+        expirationTitleLabel.text = NSLocalizedString("Expiration", comment: "Expiration note label")
+        expirationTitleLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize)
 
+        backView.addSubview(expirationTitleLabel)
+        
+        let createTitleLabel = UILabel()
+        createTitleLabel.text = NSLocalizedString("Created", comment: "Created note label")
+        createTitleLabel.font = UIFont.systemFont(ofSize: UIFont.smallSystemFontSize)
+        backView.addSubview(createTitleLabel)
+        
+        
+        
         
         // MARK: Autolayout.
     
@@ -56,22 +80,36 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         noteTextView.translatesAutoresizingMaskIntoConstraints = false
         titleTextField.translatesAutoresizingMaskIntoConstraints = false
         expirationDate.translatesAutoresizingMaskIntoConstraints = false
+        locationLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        let viewDict = ["dateLabel":dateLabel,"noteTextView":noteTextView,"titleTextField":titleTextField,"expirationDate":expirationDate]
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        expirationTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        createTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        
+        let viewDict = ["dateLabel":dateLabel,"noteTextView":noteTextView,"titleTextField":titleTextField,"expirationDate":expirationDate,"locationLabel":locationLabel,"titleLabel":titleLabel,"expirationTitleLabel":expirationTitleLabel,"createTitleLabel":createTitleLabel]
         
         // Horizontals
         var constraints = NSLayoutConstraint.constraints(withVisualFormat: "|-10-[titleTextField]-10-[expirationDate]-10-[dateLabel]-10-|", options: [], metrics: nil, views: viewDict)
-        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "|-10-[noteTextView]-10-|", options: [], metrics: nil, views: viewDict))
+         constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "|-10-[noteTextView]-10-|", options: [], metrics: nil, views: viewDict))
+        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "|-10-[locationLabel]-10-|", options: [], metrics: nil, views: viewDict))
+        
+        constraints.append(NSLayoutConstraint(item: titleLabel, attribute: .left, relatedBy: .equal, toItem: titleTextField, attribute: .left, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: expirationTitleLabel, attribute: .centerX, relatedBy: .equal, toItem: expirationDate, attribute: .centerX, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: createTitleLabel, attribute: .right, relatedBy: .equal, toItem: dateLabel, attribute: .right, multiplier: 1, constant: 0))
+        
         
         // Verticals
         
-        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:[dateLabel]-10-[noteTextView]-10-|", options: [], metrics: nil, views: viewDict))
+        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:[dateLabel]-4-[createTitleLabel]-[locationLabel]-[noteTextView]-10-|", options: [], metrics: nil, views: viewDict))
         
         constraints.append(NSLayoutConstraint(item: dateLabel, attribute: .top, relatedBy: .equal, toItem: backView.safeAreaLayoutGuide, attribute: .top, multiplier: 1, constant: 10))
         
         constraints.append(NSLayoutConstraint(item: titleTextField, attribute: .lastBaseline, relatedBy: .equal, toItem: dateLabel, attribute: .lastBaseline, multiplier: 1, constant: 0))
         
         constraints.append(NSLayoutConstraint(item: expirationDate, attribute: .lastBaseline, relatedBy: .equal, toItem: dateLabel, attribute: .lastBaseline, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: titleLabel, attribute: .lastBaseline, relatedBy: .equal, toItem: createTitleLabel, attribute: .lastBaseline, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: expirationTitleLabel, attribute: .lastBaseline, relatedBy: .equal, toItem: createTitleLabel, attribute: .lastBaseline, multiplier: 1, constant: 0))
         
         backView.addConstraints(constraints)
         
@@ -84,12 +122,24 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         titleTextField.text = note.title
         noteTextView.text = note.content
         dateLabel.text = dateFormatter.string(from: Date(timeIntervalSince1970: note.createdAtTI))
+        if note.expirationTI > 0 {
+        expirationDate.text = dateFormatter.string(from: Date(timeIntervalSince1970: note.expirationTI))
+        } else {
+            expirationDate.placeholder = NSLocalizedString("Expiration date", comment: "")
+        }
+        locationLabel.text = note.address
         
         pictures = note.pictures?.sortedArray(using: [NSSortDescriptor(key: "tag", ascending: true)]) as! [Picture]
   
         for picture  in pictures {
                 addNewImage(UIImage(data: picture.imgData!)!, tag: Int(picture.tag), relativeX: picture.x, relativeY: picture.y)
         }
+        
+        // MARK: Views
+        let datePicker = UIDatePicker()
+        datePicker.datePickerMode = .date
+        datePicker.addTarget(self, action: #selector(dateChanged(_:)), for: .valueChanged)
+        expirationDate.inputView = datePicker
         
         // MARK: Toolbar
         
@@ -123,6 +173,10 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         {
             titleTextField.resignFirstResponder()
         }
+        else if expirationDate.isFirstResponder
+        {
+            expirationDate.resignFirstResponder()
+        }
     }
     
     // MARK: TextField Delegate
@@ -137,6 +191,18 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
             privateNote.title = newText
             try! privateMOC.save()
         }
+        }
+    }
+    
+    // MARK: Date Picker
+    @objc func dateChanged(_ datePicker:UIDatePicker)
+    {
+        expirationDate.text = dateFormatter.string(from: datePicker.date)
+        let privateMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+        privateMOC.perform {
+            let privateNote = privateMOC.object(with: self.note.objectID) as! Note
+            privateNote.expirationTI = datePicker.date.timeIntervalSince1970
+            try! privateMOC.save()
         }
     }
 
@@ -225,6 +291,24 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         addNewImage(image, tag: tag, relativeX: xRelative, relativeY: yRelative)
         
         picker.dismiss(animated: true, completion: nil)
+        
+    }
+    
+    // MARK: Select In Map Delegate
+    func address(_ address: String, lat: Double, lon: Double) {
+        locationLabel.text = address
+        let backMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+        
+        backMOC.perform {
+            
+           let backNote = (backMOC.object(with: self.note.objectID) as! Note)
+           
+            backNote.address = address
+            backNote.lat = lat
+            backNote.lon = lon
+            
+            try! backMOC.save()
+        }
         
     }
     
