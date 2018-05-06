@@ -19,6 +19,7 @@ extension NoteViewController {
         imageView.tag = tag
         imageView.isUserInteractionEnabled = true
         self.view.addSubview(imageView)
+        imageViews.append(imageView)
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -76,6 +77,7 @@ extension NoteViewController {
     
     @objc func userMoveImage(longPressGesture:UILongPressGestureRecognizer)
     {
+        let picture = pictures[(longPressGesture.view?.tag)! - 1]
         let leftImgConstraint = (self.view.constraints.filter { (constraint) -> Bool in
             return constraint.identifier == "left_\(longPressGesture.view!.tag)"
         }.first)!
@@ -99,11 +101,15 @@ extension NoteViewController {
             leftImgConstraint.constant = location.x - relativePoint.x
             topImgConstraint.constant = location.y - relativePoint.y
             
+            
         case .ended, .cancelled:
             
             UIView.animate(withDuration: 0.1, animations: {
                 longPressGesture.view!.transform = CGAffineTransform.init(scaleX: 1, y: 1)
             })
+            let relativeX = leftImgConstraint.constant / UIScreen.main.bounds.width
+            let relativeY = topImgConstraint.constant / UIScreen.main.bounds.height
+            saveIn(picture: picture, setValuesForKey: ["x": relativeX,"y":relativeY])
             
         default:
             break
@@ -113,22 +119,27 @@ extension NoteViewController {
     
     @objc func rotateImage(rotateGesture:UIRotationGestureRecognizer)
     {
+        let picture = pictures[(rotateGesture.view?.tag)! - 1]
         switch rotateGesture.state {
         case .began, .changed:
-            rotateGesture.view!.transform = CGAffineTransform.init(rotationAngle: rotateGesture.rotation)
+          //  rotateGesture.view!.transform =
+         //   let rotation = CGAffineTransform.init(rotationAngle: rotateGesture.rotation)
+            let scale = CGAffineTransform.init(scaleX: CGFloat(picture.scale), y: CGFloat(picture.scale))
+               rotateGesture.view!.transform = scale.rotated(by: rotateGesture.rotation)
         case .ended, .cancelled:
-            rotateGesture.view!.transform = CGAffineTransform.init(rotationAngle: rotateGesture.rotation)
+            let scale = CGAffineTransform.init(scaleX: CGFloat(picture.scale), y: CGFloat(picture.scale))
+            rotateGesture.view!.transform = scale.rotated(by: rotateGesture.rotation)
+            saveIn(picture: picture, setValuesForKey: ["rotation":rotateGesture.rotation])
             
-            print("Ver Angle: \(rotateGesture.rotation)")
         default:
             break;
         }
+     
     }
     
     @objc func zoomImage(zoomGesture:UIPinchGestureRecognizer)
     {
-        
-        
+        let picture = pictures[(zoomGesture.view?.tag)! - 1]
         
         var scale = zoomGesture.scale
         if scale > 1.3
@@ -139,6 +150,7 @@ extension NoteViewController {
         {
             scale = 0.7
         }
+        saveIn(picture: picture, setValuesForKey: ["scale":scale])
 
        switch zoomGesture.state {
         case .began, .changed:
@@ -153,6 +165,17 @@ extension NoteViewController {
         }
     }
     
+    // MARK: Model save.
+    func saveIn(picture: Picture, setValuesForKey:[String:Any]) {
+        
+        let backMOC = DataManager.sharedManager.persistentContainer.newBackgroundContext()
+        backMOC.perform {
+            let backPicture = backMOC.object(with: picture.objectID) as! Picture
+            backPicture.setValuesForKeys(setValuesForKey)
+            
+            try! backMOC.save()
+        }
+    }
     
     
 }

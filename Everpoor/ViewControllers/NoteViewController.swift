@@ -133,6 +133,7 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
   
         for picture  in pictures {
                 addNewImage(UIImage(data: picture.imgData!)!, tag: Int(picture.tag), relativeX: picture.x, relativeY: picture.y)
+                pictures.append(picture)
         }
         
         // MARK: Views
@@ -281,15 +282,21 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
             
             picture.x = xRelative
             picture.y = yRelative
+            picture.rotation = 0
+            picture.scale = 1
             picture.tag = Int64(tag)
             picture.imgData = UIImagePNGRepresentation(image)
             
             picture.note = (backMOC.object(with: self.note.objectID) as! Note)
             
             try! backMOC.save()
+            
+            DispatchQueue.main.async {
+                self.pictures.append(DataManager.sharedManager.persistentContainer.viewContext.object(with: picture.objectID) as! Picture)
+            }
         }
         addNewImage(image, tag: tag, relativeX: xRelative, relativeY: yRelative)
-        
+      
         picker.dismiss(animated: true, completion: nil)
         
     }
