@@ -92,7 +92,16 @@ extension NoteViewController {
             closeKeyboard()
             relativePoint = longPressGesture.location(in: longPressGesture.view)
             UIView.animate(withDuration: 0.1, animations: {
-                longPressGesture.view!.transform = CGAffineTransform.init(scaleX: 1.2, y: 1.2)
+                let scale = CGFloat(picture.scale*1.2)
+                if picture.rotation != 0
+                {
+                    let rotate = CGAffineTransform.init(rotationAngle: CGFloat(picture.rotation))
+                    longPressGesture.view!.transform = rotate.scaledBy(x: scale, y: scale)
+                }
+                else
+                {
+                    longPressGesture.view!.transform = CGAffineTransform.init(scaleX: scale, y: scale)
+                }
             })
             
         case .changed:
@@ -105,7 +114,16 @@ extension NoteViewController {
         case .ended, .cancelled:
             
             UIView.animate(withDuration: 0.1, animations: {
-                longPressGesture.view!.transform = CGAffineTransform.init(scaleX: 1, y: 1)
+                let scale = CGFloat(picture.scale)
+                if picture.rotation != 0
+                {
+                    let rotate = CGAffineTransform.init(rotationAngle: CGFloat(picture.rotation))
+                    longPressGesture.view!.transform = rotate.scaledBy(x: scale, y: scale)
+                }
+                else
+                {
+                    longPressGesture.view!.transform = CGAffineTransform.init(scaleX: scale, y: scale)
+                }
             })
             let relativeX = leftImgConstraint.constant / UIScreen.main.bounds.width
             let relativeY = topImgConstraint.constant / UIScreen.main.bounds.height
@@ -150,16 +168,29 @@ extension NoteViewController {
         {
             scale = 0.7
         }
-        saveIn(picture: picture, setValuesForKey: ["scale":scale])
 
        switch zoomGesture.state {
         case .began, .changed:
-        //    zoomGesture.view?.transform = CGAffineTransform.init(rotationAngle: rotation)
-            zoomGesture.view!.transform = zoomGesture.view!.transform.scaledBy(x: scale, y: scale)
+            if picture.rotation != 0
+            {
+            let rotate = CGAffineTransform.init(rotationAngle: CGFloat(picture.rotation))
+            zoomGesture.view!.transform = rotate.scaledBy(x: scale, y: scale)
+            }
+            else
+            {
+            zoomGesture.view!.transform = CGAffineTransform.init(scaleX: scale, y: scale)
+            }
         case .ended, .cancelled:
-         //   zoomGesture.view?.transform = CGAffineTransform.init(rotationAngle: rotation)
-            zoomGesture.view!.transform = zoomGesture.view!.transform.scaledBy(x: scale, y: scale)
-        
+            if picture.rotation != 0
+            {
+            let rotate = CGAffineTransform.init(rotationAngle: CGFloat(picture.rotation))
+            zoomGesture.view!.transform = rotate.scaledBy(x: scale, y: scale)
+            }
+            else
+            {
+            zoomGesture.view!.transform = CGAffineTransform.init(scaleX: scale, y: scale)
+            }
+            saveIn(picture: picture, setValuesForKey: ["scale":scale])
         default:
             break;
         }
