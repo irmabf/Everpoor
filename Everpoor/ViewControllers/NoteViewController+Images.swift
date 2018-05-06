@@ -36,7 +36,7 @@ extension NoteViewController {
         
         let constantTop = CGFloat(relativeY) * UIScreen.main.bounds.height
         
-        let topConstraint = NSLayoutConstraint(item: imageView, attribute: .top, relatedBy: .equal, toItem: self.noteTextView.contentLayoutGuide, attribute: .top, multiplier: 1, constant: constantTop)
+        let topConstraint = NSLayoutConstraint(item: imageView, attribute: .top, relatedBy: .equal, toItem: self.topLine, attribute: .top, multiplier: 1, constant: constantTop)
         
         topConstraint.identifier = "top_\(tag)"
         
@@ -49,7 +49,7 @@ extension NoteViewController {
         constraints.append(NSLayoutConstraint(item: imageView, attribute: .left, relatedBy: .greaterThanOrEqual, toItem: self.view, attribute: .left, multiplier: 1, constant: 10))
         constraints.append(NSLayoutConstraint(item: imageView, attribute: .right, relatedBy: .lessThanOrEqual, toItem: self.view, attribute: .right, multiplier: 1, constant: -10))
         
-        constraints.append(NSLayoutConstraint(item: imageView, attribute: .top, relatedBy: .greaterThanOrEqual, toItem: self.noteTextView, attribute: .top, multiplier: 1, constant: 10))
+        constraints.append(NSLayoutConstraint(item: imageView, attribute: .top, relatedBy: .greaterThanOrEqual, toItem: self.topLine, attribute: .top, multiplier: 1, constant: 10))
         
         
         constraints.append(NSLayoutConstraint(item: imageView, attribute: .bottom, relatedBy: .lessThanOrEqual, toItem: self.view, attribute: .bottom, multiplier: 1, constant: -10))
@@ -71,6 +71,41 @@ extension NoteViewController {
         
         imageView.addGestureRecognizer(zoomingGesture)
         
+        // MARK: transform
+        let picture = pictures[tag - 1]
+    
+        let scale = CGFloat(picture.scale)
+        
+        if picture.rotation != 0
+        {
+            let rotate = CGAffineTransform.init(rotationAngle: CGFloat(picture.rotation))
+            imageView.transform = rotate.scaledBy(x: scale, y: scale)
+        }
+        else
+        {
+            imageView.transform = CGAffineTransform.init(scaleX: scale, y: scale)
+        }
+        
+        
+    }
+    
+    // MARK: Exclusion path
+    
+    override func viewDidLayoutSubviews()
+    {
+        var paths: [UIBezierPath] = []
+        for imageView in imageViews
+        {
+        
+        var rect = view.convert(imageView.frame, to: noteTextView)
+        rect = rect.insetBy(dx: -5, dy: -5)
+        
+        let path = UIBezierPath(rect: rect)
+   //     path.apply(imageView.transform)
+    
+        paths.append(path)
+        }
+        noteTextView.textContainer.exclusionPaths = paths
     }
     
     // MARK: Gestures Methods.
@@ -140,14 +175,15 @@ extension NoteViewController {
         let picture = pictures[(rotateGesture.view?.tag)! - 1]
         switch rotateGesture.state {
         case .began, .changed:
-          //  rotateGesture.view!.transform =
-         //   let rotation = CGAffineTransform.init(rotationAngle: rotateGesture.rotation)
+       
             let scale = CGAffineTransform.init(scaleX: CGFloat(picture.scale), y: CGFloat(picture.scale))
                rotateGesture.view!.transform = scale.rotated(by: rotateGesture.rotation)
+            self.viewDidLayoutSubviews()
         case .ended, .cancelled:
             let scale = CGAffineTransform.init(scaleX: CGFloat(picture.scale), y: CGFloat(picture.scale))
             rotateGesture.view!.transform = scale.rotated(by: rotateGesture.rotation)
             saveIn(picture: picture, setValuesForKey: ["rotation":rotateGesture.rotation])
+            self.viewDidLayoutSubviews()
             
         default:
             break;
@@ -180,6 +216,7 @@ extension NoteViewController {
             {
             zoomGesture.view!.transform = CGAffineTransform.init(scaleX: scale, y: scale)
             }
+            self.viewDidLayoutSubviews()
         case .ended, .cancelled:
             if picture.rotation != 0
             {
@@ -191,6 +228,7 @@ extension NoteViewController {
             zoomGesture.view!.transform = CGAffineTransform.init(scaleX: scale, y: scale)
             }
             saveIn(picture: picture, setValuesForKey: ["scale":scale])
+            self.viewDidLayoutSubviews()
         default:
             break;
         }

@@ -18,10 +18,11 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
     let dateLabel = UILabel()
     let expirationDate = UITextField()
     let titleTextField = UITextField()
+    let topLine = UIView()
     let noteTextView = UITextView()
     
     let locationLabel = UILabel()
-    
+    var bottomConstraint:NSLayoutConstraint!
     
     var note: Note!
     var pictures: [Picture] = []
@@ -101,9 +102,13 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         
         // Verticals
         
-        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:[dateLabel]-4-[createTitleLabel]-[locationLabel]-[noteTextView]-10-|", options: [], metrics: nil, views: viewDict))
+        constraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:[dateLabel]-4-[createTitleLabel]-[locationLabel]-[noteTextView]", options: [], metrics: nil, views: viewDict))
         
         constraints.append(NSLayoutConstraint(item: dateLabel, attribute: .top, relatedBy: .equal, toItem: backView.safeAreaLayoutGuide, attribute: .top, multiplier: 1, constant: 10))
+        bottomConstraint = NSLayoutConstraint(item: noteTextView, attribute: .bottom, relatedBy: .equal, toItem: backView.safeAreaLayoutGuide, attribute: .bottom, multiplier: 1, constant: -10)
+        constraints.append(bottomConstraint)
+        
+        
         
         constraints.append(NSLayoutConstraint(item: titleTextField, attribute: .lastBaseline, relatedBy: .equal, toItem: dateLabel, attribute: .lastBaseline, multiplier: 1, constant: 0))
         
@@ -112,6 +117,16 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         constraints.append(NSLayoutConstraint(item: expirationTitleLabel, attribute: .lastBaseline, relatedBy: .equal, toItem: createTitleLabel, attribute: .lastBaseline, multiplier: 1, constant: 0))
         
         backView.addConstraints(constraints)
+        
+        // MARK. Top line
+        noteTextView.addSubview(topLine)
+        
+        topLine.translatesAutoresizingMaskIntoConstraints = false
+        var lineContraints = NSLayoutConstraint.constraints(withVisualFormat: "|-0-[line]-0-|", options: [], metrics: nil, views: ["line":topLine])
+        lineContraints.append(contentsOf: NSLayoutConstraint.constraints(withVisualFormat: "V:|-0-[line(1)]", options: [], metrics: nil, views: ["line":topLine]))
+        
+        noteTextView.addConstraints(lineContraints)
+        
         
         self.view = backView
     }
@@ -132,8 +147,9 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         pictures = note.pictures?.sortedArray(using: [NSSortDescriptor(key: "tag", ascending: true)]) as! [Picture]
   
         for picture  in pictures {
-                addNewImage(UIImage(data: picture.imgData!)!, tag: Int(picture.tag), relativeX: picture.x, relativeY: picture.y)
                 pictures.append(picture)
+                addNewImage(UIImage(data: picture.imgData!)!, tag: Int(picture.tag), relativeX: picture.x, relativeY: picture.y)
+            
         }
         
         // MARK: Views
@@ -161,6 +177,7 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
 
         view.addGestureRecognizer(swipeGesture)
         
+        setupViewsWithKeyboards()
     }
     
     @objc func closeKeyboard()
@@ -293,11 +310,11 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
             
             DispatchQueue.main.async {
                 self.pictures.append(DataManager.sharedManager.persistentContainer.viewContext.object(with: picture.objectID) as! Picture)
+                self.addNewImage(image, tag: tag, relativeX: xRelative, relativeY: yRelative)
+                picker.dismiss(animated: true, completion: nil)
             }
         }
-        addNewImage(image, tag: tag, relativeX: xRelative, relativeY: yRelative)
-      
-        picker.dismiss(animated: true, completion: nil)
+     
         
     }
     
@@ -319,6 +336,33 @@ class NoteViewController: UIViewController, UITextFieldDelegate,UIImagePickerCon
         
     }
     
-
+    // MARK: Manage Keyboard
+    func setupViewsWithKeyboards()  {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillShow),
+                                               name: Notification.Name.UIKeyboardWillShow,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillHide),
+                                               name: Notification.Name.UIKeyboardWillHide,
+                                               object: nil)
+    }
+    
+    @objc func keyboardWillShow(notification:Notification)
+    {
+        let info = notification.userInfo
+        let kbSize = (info![UIKeyboardFrameEndUserInfoKey] as! NSValue).cgRectValue.size
+        UIView.animate(withDuration: 0.1) {
+            self.bottomConstraint.constant = -(kbSize.height)
+        }
+      
+    }
+    
+    @objc func keyboardWillHide(notification:Notification)
+    {
+        UIView.animate(withDuration: 0.1) {
+        self.bottomConstraint.constant = -10
+        }
+    }
 
 }
