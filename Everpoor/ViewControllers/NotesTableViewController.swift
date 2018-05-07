@@ -50,6 +50,7 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
             try! viewMOC.save()
             
         }
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadTableView), name: Notification.Name.NSManagedObjectContextDidSave, object: nil)
     }
 
 
@@ -149,8 +150,19 @@ class NotesTableViewController: UITableViewController, NSFetchedResultsControlle
         present(navController, animated: true, completion: nil)
     }
     
+    // MARK: fetchedResultController Delegate
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+
         tableView.reloadData()
+    }
+    
+    @objc func reloadTableView() {
+        
+        DispatchQueue.main.async {
+        self.tableView.reloadData()
+        }
+    
     }
     
     
