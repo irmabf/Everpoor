@@ -17,6 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         
         window = UIWindow()
+        window?.tintColor = UIColor(red: 222/255.0, green: 124/255.0, blue: 31/255.0, alpha: 1)
         
         let notesTVC = NotesTableViewController(style: .plain)
         
